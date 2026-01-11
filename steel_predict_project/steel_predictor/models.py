@@ -25,7 +25,10 @@ class Prediction(models.Model):
     YS = models.FloatField()
     Elongation = models.FloatField()
     Hardness = models.FloatField()
-    Reduction = models.FloatField()
+    Reduction = models.FloatField(
+        null=True,
+        blank=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 

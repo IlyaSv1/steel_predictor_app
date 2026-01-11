@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'steel_predictor',
+    'steel_predictor.apps.SteelPredictorConfig',
 ]
 
 MIDDLEWARE = [
