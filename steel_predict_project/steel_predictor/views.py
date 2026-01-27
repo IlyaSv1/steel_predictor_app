@@ -9,7 +9,6 @@ from .gost_service import gost_service
 STEEL_NAMES = {
     'carbon': 'углеродистой стали',
     'stainless': 'нержавеющей стали',
-    'alloy': 'легированной стали',
 }
 
 
