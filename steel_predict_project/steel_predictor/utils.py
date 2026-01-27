@@ -82,6 +82,7 @@ def load_models():
     for steel_type in ["carbon", "stainless"]:
         model_dir = APP_DIR / "models" / steel_type
 
+        # Загружаем модели
         MODELS[steel_type]["models"] = {
             "uts": joblib.load(model_dir / "uts_model.pkl"),
             "ys": joblib.load(model_dir / "ys_model.pkl"),
@@ -89,13 +90,20 @@ def load_models():
             "hardness": joblib.load(model_dir / "hardness_model.pkl"),
         }
 
-        MODELS[steel_type]["scaler"] = joblib.load(
-            model_dir / "scaler.pkl"
-        )
+        # Загружаем scaler
+        MODELS[steel_type]["scaler"] = joblib.load(model_dir / "scaler.pkl")
 
-        MODELS[steel_type]["features"] = joblib.load(
-            model_dir / "features.pkl"
-        )
+        # Загружаем features
+        features_path = model_dir / "features.pkl"
+        if features_path.exists():
+            MODELS[steel_type]["features"] = joblib.load(features_path)
+        else:
+            # Если features.pkl нет — используем стандартный список элементов
+            default_features = ["C", "Mn", "Si",
+                                "P", "S", "Ni", "Cr", "Mo", "Ti"]
+            MODELS[steel_type]["features"] = default_features
+            print(
+                f"⚠️ features.pkl не найден для {steel_type}, используется default: {default_features}")
 
     print("✅ ML models loaded successfully")
 

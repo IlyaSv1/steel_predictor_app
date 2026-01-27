@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Result - {{ steel_type|title }} Steel</title>
+    <title>Результаты прогноза - {{ steel_name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -22,7 +22,15 @@
             {% for key, value in data.items %}
                 {% if key != 'csrfmiddlewaretoken' %}
                 <tr>
-                    <td>{{ key }}</td>
+                    <td>
+                        {% if key == 'gost' %}
+                            ГОСТ
+                        {% elif key == 'grade' %}
+                            Марка стали
+                        {% else %}
+                            {{ key }}
+                        {% endif %}
+                    </td>
                     <td>{{ value }}</td>
                 </tr>
                 {% endif %}
@@ -42,7 +50,19 @@
         <tbody>
             {% for key, value in result.items %}
             <tr>
-                <td>{{ key }}</td>
+                <td>
+                    {% if key == 'uts' %}
+                        Предел прочности на растяжение, МПа
+                    {% elif key == 'ys' %}
+                        Предел текучести, МПа
+                    {% elif key == 'elong' %}
+                        Относительное удлинение, %
+                    {% elif key == 'hardness' %}
+                        Твёрдость, HB
+                    {% else %}
+                        {{ key }}
+                    {% endif %}
+                </td>
                 <td>{{ value }}</td>
             </tr>
             {% endfor %}

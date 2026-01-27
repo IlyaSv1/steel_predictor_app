@@ -31,7 +31,7 @@ def predict_view(request, steel_type):
 
     # ВСЕ ДАННЫЕ ГОСТ → МАРКИ → СОСТАВ
     gost_data = {
-        g: gost_service.get_gost_grades(g)  # теперь весь словарь grades
+        g: gost_service.get_gost_grades(g)
         for g in gosts
     }
 
