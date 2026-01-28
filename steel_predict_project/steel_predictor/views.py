@@ -1,5 +1,6 @@
 import json
-from django.shortcuts import render
+import numpy as np
+from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 from .utils import predict_properties, validate_composition
 from .models import Prediction
@@ -16,6 +17,7 @@ def index(request):
     return render(request, 'steel_predictor/index.html')
 
 
+# ===== predict_view =====
 def predict_view(request, steel_type):
     if steel_type not in STEEL_NAMES:
         raise Http404("Неизвестный тип стали")
@@ -28,18 +30,34 @@ def predict_view(request, steel_type):
         if gost_service.get_gost_type(g) == steel_type
     ]
 
-    # ВСЕ ДАННЫЕ ГОСТ → МАРКИ → СОСТАВ
-    gost_data = {
-        g: gost_service.get_gost_grades(g)
-        for g in gosts
-    }
+    gost_data = {g: gost_service.get_gost_grades(g) for g in gosts}
+
+    data = {}
+    selected_gost = ''
+    selected_grade = ''
+    errors = {}
+
+    restore_id = request.GET.get('restore_id')
+    if restore_id:
+        prediction = get_object_or_404(Prediction, id=restore_id)
+        data = {
+            'C': prediction.C,
+            'Mn': prediction.Mn,
+            'Si': prediction.Si,
+            'P': prediction.P,
+            'S': prediction.S,
+            'Ni': prediction.Ni,
+            'Cr': prediction.Cr,
+            'Mo': prediction.Mo,
+            'Ti': prediction.Ti,
+        }
+        selected_gost = prediction.gost
+        selected_grade = prediction.grade
 
     if request.method == 'POST':
         data = request.POST
-        selected_gost = data.get('gost')
-        selected_grade = data.get('grade')
-
-        errors = {}
+        selected_gost = data.get('gost', '')
+        selected_grade = data.get('grade', '')
 
         # Валидация по ГОСТ
         if selected_gost and selected_grade:
@@ -55,7 +73,6 @@ def predict_view(request, steel_type):
                     val = float(data.get(el, 0) or 0)
                     if not (min_v <= val <= max_v):
                         errors[el] = f'{val} вне диапазона [{min_v}–{max_v}]'
-
         else:
             errors = validate_composition(steel_type, data)
 
@@ -75,15 +92,25 @@ def predict_view(request, steel_type):
                 }
             )
 
-        # Предсказание свойств стали
-        result = predict_properties(steel_type, data)
+        # ===== Используем словарь, а не numpy =====
+        # predict_properties теперь принимает словарь
+        result = predict_properties(steel_type, {
+            "C": float(data.get('C') or 0),
+            "Mn": float(data.get('Mn') or 0),
+            "Si": float(data.get('Si') or 0),
+            "P": float(data.get('P') or 0),
+            "S": float(data.get('S') or 0),
+            "Ni": float(data.get('Ni') or 0),
+            "Cr": float(data.get('Cr') or 0),
+            "Mo": float(data.get('Mo') or 0),
+            "Ti": float(data.get('Ti') or 0),
+        })
 
         # Сохранение в БД
         Prediction.objects.create(
             steel_type=steel_type,
             gost=selected_gost,
             grade=selected_grade,
-
             C=float(data.get('C') or 0),
             Mn=float(data.get('Mn') or 0),
             Si=float(data.get('Si') or 0),
@@ -93,7 +120,6 @@ def predict_view(request, steel_type):
             Cr=float(data.get('Cr') or 0),
             Mo=float(data.get('Mo') or 0),
             Ti=float(data.get('Ti') or 0),
-
             UTS=result['uts'],
             YS=result['ys'],
             Elongation=result['elong'],
@@ -120,6 +146,9 @@ def predict_view(request, steel_type):
             'steel_type': steel_type,
             'gosts': gosts,
             'gost_data': json.dumps(gost_data, ensure_ascii=False),
+            'data': data,
+            'selected_gost': selected_gost,
+            'selected_grade': selected_grade,
         }
     )
 

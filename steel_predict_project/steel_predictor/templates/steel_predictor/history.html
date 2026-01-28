@@ -23,10 +23,11 @@
                     <th>Cr</th>
                     <th>Mo</th>
                     <th>Ti</th>
-                    <th>Предел прочности на растяжение, МПа</th>
+                    <th>Предел прочности, МПа</th>
                     <th>Предел текучести, МПа</th>
                     <th>Относительное удлинение, %</th>
                     <th>Твёрдость, HB</th>
+                    <th>Действие</th>
                 </tr>
             </thead>
 
@@ -47,6 +48,12 @@
                     <td>{{ prediction.YS }}</td>
                     <td>{{ prediction.Elongation }}</td>
                     <td>{{ prediction.Hardness }}</td>
+                    <td>
+                        <a href="{% url 'predict' steel_type %}?restore_id={{ prediction.id }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            Открыть расчёт
+                        </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -2,6 +2,7 @@ import pandas as pd
 import joblib
 from pathlib import Path
 from typing import Dict
+import numpy as np
 
 # Папка приложения steel_predictor
 APP_DIR = Path(__file__).resolve().parent
@@ -42,12 +43,6 @@ def validate_composition(
     steel_type: str,
     raw_data: dict
 ) -> list[str]:
-    """
-    Проверяет химический состав на соответствие допустимым диапазонам
-
-    :return: список ошибок (пустой список = всё ок)
-    """
-
     errors = []
 
     limits = COMPOSITION_LIMITS.get(steel_type)
@@ -75,10 +70,6 @@ def validate_composition(
 
 
 def load_models():
-    """
-    Загружает модели, scaler и список признаков
-    для каждого типа стали
-    """
     for steel_type in ["carbon", "stainless"]:
         model_dir = APP_DIR / "models" / steel_type
 
@@ -98,12 +89,12 @@ def load_models():
         if features_path.exists():
             MODELS[steel_type]["features"] = joblib.load(features_path)
         else:
-            # Если features.pkl нет — используем стандартный список элементов
             default_features = ["C", "Mn", "Si",
                                 "P", "S", "Ni", "Cr", "Mo", "Ti"]
             MODELS[steel_type]["features"] = default_features
             print(
-                f"⚠️ features.pkl не найден для {steel_type}, используется default: {default_features}")
+                f"⚠️ features.pkl не найден для {steel_type}, используется default: {default_features}"
+            )
 
     print("✅ ML models loaded successfully")
 
@@ -128,6 +119,7 @@ def prepare_input_data(raw_data: dict, features: list) -> pd.DataFrame:
                     f"Некорректное значение для {feature}: {value}"
                 )
 
+    # Возвращаем DataFrame с именами колонок
     return pd.DataFrame([values], columns=features)
 
 
@@ -138,7 +130,6 @@ def predict_properties(
     """
     Делает предсказание механических свойств стали
     """
-
     if steel_type not in MODELS:
         raise ValueError(f"Неизвестный тип стали: {steel_type}")
 
@@ -148,16 +139,47 @@ def predict_properties(
     scaler = model_block["scaler"]
     models = model_block["models"]
 
-    # 1. Подготовка входных данных
+    # Подготовка входных данных
     X = prepare_input_data(raw_data, features)
 
-    # 2. Масштабирование (без warning)
+    # Масштабирование
     X_scaled = pd.DataFrame(
         scaler.transform(X),
         columns=features
     )
 
-    # 3. Предсказания (СТАБИЛЬНЫЕ КЛЮЧИ)
+    # Предсказания
+    return {
+        "uts": round(float(models["uts"].predict(X_scaled)[0]), 2),
+        "ys": round(float(models["ys"].predict(X_scaled)[0]), 2),
+        "elong": round(float(models["elong"].predict(X_scaled)[0]), 2),
+        "hardness": round(float(models["hardness"].predict(X_scaled)[0]), 2),
+    }
+
+
+def predict_properties(
+    steel_type: str,
+    raw_data: dict
+) -> Dict[str, float]:
+    """
+    Делает предсказание механических свойств стали
+    """
+    if steel_type not in MODELS:
+        raise ValueError(f"Неизвестный тип стали: {steel_type}")
+
+    model_block = MODELS[steel_type]
+
+    features = model_block["features"]
+    scaler = model_block["scaler"]
+    models = model_block["models"]
+
+    # Подготовка входных данных
+    X = prepare_input_data(raw_data, features)
+
+    # Масштабирование
+    X_scaled = scaler.transform(X)
+
+    # Предсказания
     return {
         "uts": round(float(models["uts"].predict(X_scaled)[0]), 2),
         "ys": round(float(models["ys"].predict(X_scaled)[0]), 2),
