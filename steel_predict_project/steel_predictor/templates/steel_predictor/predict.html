@@ -160,56 +160,57 @@
         <div class="row mb-3">
             <div class="col">
                 <label class="form-label">C</label>
-                <input type="number" step="0.001" name="C" class="form-control"
-                       value="{{ data.C|default:0 }}" required>
+                <input type="number" step="0.001" min="0" name="C" class="form-control"
+                    value="{{ data.C|default:0 }}" required>
             </div>
             <div class="col">
                 <label class="form-label">Mn</label>
-                <input type="number" step="0.001" name="Mn" class="form-control"
-                       value="{{ data.Mn|default:0 }}" required>
+                <input type="number" step="0.001" min="0" name="Mn" class="form-control"
+                    value="{{ data.Mn|default:0 }}" required>
             </div>
             <div class="col">
                 <label class="form-label">Si</label>
-                <input type="number" step="0.001" name="Si" class="form-control"
-                       value="{{ data.Si|default:0 }}" required>
+                <input type="number" step="0.001" min="0" name="Si" class="form-control"
+                    value="{{ data.Si|default:0 }}" required>
             </div>
         </div>
 
         <div class="row mb-3">
             <div class="col">
                 <label class="form-label">P</label>
-                <input type="number" step="0.001" name="P" class="form-control"
-                       value="{{ data.P|default:0 }}" required>
+                <input type="number" step="0.001" min="0" name="P" class="form-control"
+                    value="{{ data.P|default:0 }}" required>
             </div>
             <div class="col">
                 <label class="form-label">S</label>
-                <input type="number" step="0.001" name="S" class="form-control"
-                       value="{{ data.S|default:0 }}" required>
+                <input type="number" step="0.001" min="0" name="S" class="form-control"
+                    value="{{ data.S|default:0 }}" required>
             </div>
             <div class="col">
                 <label class="form-label">Ni</label>
-                <input type="number" step="0.001" name="Ni" class="form-control"
-                       value="{{ data.Ni|default:0 }}">
+                <input type="number" step="0.001" min="0" name="Ni" class="form-control"
+                    value="{{ data.Ni|default:0 }}">
             </div>
         </div>
 
         <div class="row mb-4">
             <div class="col">
                 <label class="form-label">Cr</label>
-                <input type="number" step="0.001" name="Cr" class="form-control"
-                       value="{{ data.Cr|default:0 }}">
+                <input type="number" step="0.001" min="0" name="Cr" class="form-control"
+                    value="{{ data.Cr|default:0 }}">
             </div>
             <div class="col">
                 <label class="form-label">Mo</label>
-                <input type="number" step="0.001" name="Mo" class="form-control"
-                       value="{{ data.Mo|default:0 }}">
+                <input type="number" step="0.001" min="0" name="Mo" class="form-control"
+                    value="{{ data.Mo|default:0 }}">
             </div>
             <div class="col">
                 <label class="form-label">Ti</label>
-                <input type="number" step="0.001" name="Ti" class="form-control"
-                       value="{{ data.Ti|default:0 }}">
+                <input type="number" step="0.001" min="0" name="Ti" class="form-control"
+                    value="{{ data.Ti|default:0 }}">
             </div>
         </div>
+
 
         <div class="d-grid">
             <button type="submit" class="btn btn-primary btn-lg">

@@ -50,11 +50,10 @@
                     <td>{{ prediction.Hardness }}</td>
                     <td>
                         <a href="{% url 'predict' steel_type %}?restore_id={{ prediction.id }}" 
-                           class="btn btn-sm btn-outline-primary">
+                        class="btn btn-sm btn-primary">
                             Открыть расчёт
                         </a>
                     </td>
-                </tr>
                 {% endfor %}
             </tbody>
         </table>
