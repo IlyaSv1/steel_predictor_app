@@ -12,7 +12,7 @@
     {% if predictions %}
         <table class="table table-bordered table-striped table-hover">
             <thead class="table-dark">
-                <tr>
+                <tr class="text-center align-middle">
                     <th>Дата</th>
                     <th>C</th>
                     <th>Mn</th>
@@ -48,11 +48,21 @@
                     <td>{{ prediction.YS }}</td>
                     <td>{{ prediction.Elongation }}</td>
                     <td>{{ prediction.Hardness }}</td>
-                    <td>
-                        <a href="{% url 'predict' steel_type %}?restore_id={{ prediction.id }}" 
-                        class="btn btn-sm btn-primary">
-                            Открыть расчёт
+                    <td class="text-nowrap">
+                        <a href="{% url 'predict' steel_type %}?restore_id={{ prediction.id }}"
+                        class="btn btn-sm btn-primary me-1">
+                            Открыть
                         </a>
+
+                        <form method="post"
+                            action="{% url 'delete_prediction' steel_type prediction.id %}"
+                            class="d-inline"
+                            onsubmit="return confirm('Вы уверены, что хотите удалить этот расчёт?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                Удалить
+                            </button>
+                        </form>
                     </td>
                 {% endfor %}
             </tbody>

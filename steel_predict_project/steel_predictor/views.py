@@ -1,10 +1,10 @@
 import json
-import numpy as np
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import Http404
 from .utils import predict_properties, validate_composition
 from .models import Prediction
 from .gost_service import gost_service
+from django.views.decorators.http import require_POST
 
 
 STEEL_NAMES = {
@@ -170,3 +170,14 @@ def history_view(request, steel_type):
             'steel_type': steel_type,
         }
     )
+
+
+@require_POST
+def delete_prediction(request, steel_type, pk):
+    prediction = get_object_or_404(
+        Prediction,
+        id=pk,
+        steel_type=steel_type
+    )
+    prediction.delete()
+    return redirect('history', steel_type=steel_type)
