@@ -17,7 +17,6 @@ def index(request):
     return render(request, 'steel_predictor/index.html')
 
 
-# ===== predict_view =====
 def predict_view(request, steel_type):
     if steel_type not in STEEL_NAMES:
         raise Http404("Неизвестный тип стали")
@@ -36,6 +35,13 @@ def predict_view(request, steel_type):
     selected_gost = ''
     selected_grade = ''
     errors = {}
+
+    # Список элементов для формы
+    element_rows = [
+        ['C', 'Mn', 'Si'],
+        ['P', 'S', 'Ni'],
+        ['Cr', 'Mo', 'Ti']
+    ]
 
     restore_id = request.GET.get('restore_id')
     if restore_id:
@@ -89,21 +95,13 @@ def predict_view(request, steel_type):
                     'gost_data': json.dumps(gost_data, ensure_ascii=False),
                     'selected_gost': selected_gost,
                     'selected_grade': selected_grade,
+                    'element_rows': element_rows,  # <-- передаём в шаблон
                 }
             )
 
-        # ===== Используем словарь, а не numpy =====
-        # predict_properties теперь принимает словарь
+        # ===== Используем словарь =====
         result = predict_properties(steel_type, {
-            "C": float(data.get('C') or 0),
-            "Mn": float(data.get('Mn') or 0),
-            "Si": float(data.get('Si') or 0),
-            "P": float(data.get('P') or 0),
-            "S": float(data.get('S') or 0),
-            "Ni": float(data.get('Ni') or 0),
-            "Cr": float(data.get('Cr') or 0),
-            "Mo": float(data.get('Mo') or 0),
-            "Ti": float(data.get('Ti') or 0),
+            el: float(data.get(el) or 0) for row in element_rows for el in row
         })
 
         # Сохранение в БД
@@ -111,15 +109,7 @@ def predict_view(request, steel_type):
             steel_type=steel_type,
             gost=selected_gost,
             grade=selected_grade,
-            C=float(data.get('C') or 0),
-            Mn=float(data.get('Mn') or 0),
-            Si=float(data.get('Si') or 0),
-            P=float(data.get('P') or 0),
-            S=float(data.get('S') or 0),
-            Ni=float(data.get('Ni') or 0),
-            Cr=float(data.get('Cr') or 0),
-            Mo=float(data.get('Mo') or 0),
-            Ti=float(data.get('Ti') or 0),
+            **{el: float(data.get(el) or 0) for row in element_rows for el in row},
             UTS=result['uts'],
             YS=result['ys'],
             Elongation=result['elong'],
@@ -149,6 +139,7 @@ def predict_view(request, steel_type):
             'data': data,
             'selected_gost': selected_gost,
             'selected_grade': selected_grade,
+            'element_rows': element_rows,
         }
     )
 
