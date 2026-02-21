@@ -7,11 +7,13 @@ import pandas as pd
 import joblib
 
 
-# Базовый путь
-if getattr(sys, "frozen", False):
-    BASE_DIR = Path(sys._MEIPASS)
-else:
-    BASE_DIR = Path(__file__).resolve().parent
+# Путь
+def resource_path(relative_path: str) -> Path:
+    if hasattr(sys, "_MEIPASS"):
+        base_path = Path(sys._MEIPASS)
+    else:
+        base_path = Path(__file__).resolve().parent
+    return base_path / relative_path
 
 
 # Глобальное хранилище моделей
@@ -21,7 +23,7 @@ MODELS: Dict[str, dict] = {
 }
 
 
-# Допустимые диапазоны химического состава (%)
+# Допустимые диапазоны
 COMPOSITION_LIMITS = {
     "carbon": {
         "C": (0.02, 1.20),
@@ -48,11 +50,11 @@ COMPOSITION_LIMITS = {
 }
 
 
-# Валидация химического состава
+# Валидация
 def validate_composition(steel_type: str, raw_data: dict) -> List[str]:
     errors = []
-
     limits = COMPOSITION_LIMITS.get(steel_type)
+
     if not limits:
         return ["Неизвестный тип стали"]
 
@@ -80,10 +82,14 @@ def validate_composition(steel_type: str, raw_data: dict) -> List[str]:
 def load_models() -> None:
     for steel_type in MODELS.keys():
 
-        model_dir = BASE_DIR / "models" / steel_type
+        model_dir = resource_path(
+            f"steel_predictor/models/{steel_type}"
+        )
 
         if not model_dir.exists():
-            raise FileNotFoundError(f"Папка моделей не найдена: {model_dir}")
+            raise FileNotFoundError(
+                f"Папка моделей не найдена: {model_dir}"
+            )
 
         try:
             MODELS[steel_type]["models"] = {
@@ -115,7 +121,7 @@ def load_models() -> None:
                 f"Ошибка загрузки моделей для {steel_type}: {e}"
             )
 
-    print("✅ ML models loaded successfully")
+    print("ML models loaded successfully")
 
 
 # Подготовка входных данных
@@ -138,7 +144,7 @@ def prepare_input_data(raw_data: dict, features: list) -> pd.DataFrame:
     return pd.DataFrame([values], columns=features)
 
 
-# Предсказание свойств
+# Предсказание
 def predict_properties(
     steel_type: str,
     raw_data: dict
@@ -146,6 +152,10 @@ def predict_properties(
 
     if steel_type not in MODELS:
         raise ValueError(f"Неизвестный тип стали: {steel_type}")
+
+    # ЛЕНИВАЯ ЗАГРУЗКА
+    if not MODELS[steel_type]:
+        load_models()
 
     model_block = MODELS[steel_type]
 
