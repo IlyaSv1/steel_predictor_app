@@ -13,19 +13,21 @@
     </p>
 
     <div class="d-flex justify-content-center gap-3 mt-4">
-        <a href="{% url 'predict' 'carbon' %}" class="btn btn-primary btn-lg">
+        <a href="{% url 'steel_predictor:predict' 'carbon' %}" class="btn btn-primary btn-lg">
             Углеродистая сталь
         </a>
-        <a href="{% url 'predict' 'stainless' %}" class="btn btn-success btn-lg">
+
+        <a href="{% url 'steel_predictor:predict' 'stainless' %}" class="btn btn-success btn-lg">
             Нержавеющая сталь
         </a>
     </div>
 
     <div class="d-flex justify-content-center gap-3 mt-3">
-        <a href="{% url 'history' 'carbon' %}" class="btn btn-outline-primary btn-lg">
+        <a href="{% url 'steel_predictor:history' 'carbon' %}" class="btn btn-outline-primary btn-lg">
             История углеродистой стали
         </a>
-        <a href="{% url 'history' 'stainless' %}" class="btn btn-outline-success btn-lg">
+
+        <a href="{% url 'steel_predictor:history' 'stainless' %}" class="btn btn-outline-success btn-lg">
             История нержавеющей стали
         </a>
     </div>

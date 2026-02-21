@@ -44,7 +44,7 @@ class GOSTService:
         return None
 
     def get_gost_type(self, gost_number):
-        """Возвращает тип стали по ГОСТу (carbon/alloy/stainless)"""
+        """Возвращает тип стали по ГОСТу (carbon/stainless)"""
         gost = self.gosts.get(gost_number)
         if gost:
             return gost.get("type")

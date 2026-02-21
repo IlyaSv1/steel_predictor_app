@@ -49,21 +49,26 @@
                     <td>{{ prediction.Elongation }}</td>
                     <td>{{ prediction.Hardness }}</td>
                     <td class="text-nowrap">
-                        <a href="{% url 'predict' steel_type %}?restore_id={{ prediction.id }}"
-                        class="btn btn-sm btn-primary me-1">
+
+                        <!-- Открыть -->
+                        <a href="{% url 'steel_predictor:predict' steel_type %}?restore_id={{ prediction.id }}"
+                           class="btn btn-sm btn-primary me-1">
                             Открыть
                         </a>
 
+                        <!-- Удалить -->
                         <form method="post"
-                            action="{% url 'delete_prediction' steel_type prediction.id %}"
-                            class="d-inline"
-                            onsubmit="return confirm('Вы уверены, что хотите удалить этот расчёт?');">
+                              action="{% url 'steel_predictor:delete_prediction' steel_type prediction.id %}"
+                              class="d-inline"
+                              onsubmit="return confirm('Вы уверены, что хотите удалить этот расчёт?');">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-danger">
                                 Удалить
                             </button>
                         </form>
+
                     </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -72,8 +77,13 @@
     {% endif %}
 
     <div class="text-center mt-4">
-        <a href="{% url 'index' %}" class="btn btn-secondary btn-lg">Главная</a>
-        <a href="{% url 'predict' steel_type %}" class="btn btn-primary btn-lg">Новый прогноз</a>
+        <a href="{% url 'steel_predictor:index' %}" class="btn btn-secondary btn-lg">
+            Главная
+        </a>
+
+        <a href="{% url 'steel_predictor:predict' steel_type %}" class="btn btn-primary btn-lg">
+            Новый прогноз
+        </a>
     </div>
 </div>
 </body>

@@ -1,16 +1,25 @@
+import os
+import sys
+from pathlib import Path
+from typing import Dict, List
+
 import pandas as pd
 import joblib
-from pathlib import Path
-from typing import Dict
-import numpy as np
 
-# Папка приложения steel_predictor
-APP_DIR = Path(__file__).resolve().parent
 
-MODELS = {
+# Базовый путь
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys._MEIPASS)
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+
+
+# Глобальное хранилище моделей
+MODELS: Dict[str, dict] = {
     "carbon": {},
-    "stainless": {}
+    "stainless": {},
 }
+
 
 # Допустимые диапазоны химического состава (%)
 COMPOSITION_LIMITS = {
@@ -35,14 +44,12 @@ COMPOSITION_LIMITS = {
         "Cr": (10.5, 26.0),
         "Mo": (0.0, 6.0),
         "Ti": (0.0, 1.0),
-    }
+    },
 }
 
 
-def validate_composition(
-    steel_type: str,
-    raw_data: dict
-) -> list[str]:
+# Валидация химического состава
+def validate_composition(steel_type: str, raw_data: dict) -> List[str]:
     errors = []
 
     limits = COMPOSITION_LIMITS.get(steel_type)
@@ -69,41 +76,50 @@ def validate_composition(
     return errors
 
 
-def load_models():
-    for steel_type in ["carbon", "stainless"]:
-        model_dir = APP_DIR / "models" / steel_type
+# Загрузка моделей
+def load_models() -> None:
+    for steel_type in MODELS.keys():
 
-        # Загружаем модели
-        MODELS[steel_type]["models"] = {
-            "uts": joblib.load(model_dir / "uts_model.pkl"),
-            "ys": joblib.load(model_dir / "ys_model.pkl"),
-            "elong": joblib.load(model_dir / "elong_model.pkl"),
-            "hardness": joblib.load(model_dir / "hardness_model.pkl"),
-        }
+        model_dir = BASE_DIR / "models" / steel_type
 
-        # Загружаем scaler
-        MODELS[steel_type]["scaler"] = joblib.load(model_dir / "scaler.pkl")
+        if not model_dir.exists():
+            raise FileNotFoundError(f"Папка моделей не найдена: {model_dir}")
 
-        # Загружаем features
-        features_path = model_dir / "features.pkl"
-        if features_path.exists():
-            MODELS[steel_type]["features"] = joblib.load(features_path)
-        else:
-            default_features = ["C", "Mn", "Si",
-                                "P", "S", "Ni", "Cr", "Mo", "Ti"]
-            MODELS[steel_type]["features"] = default_features
-            print(
-                f"⚠️ features.pkl не найден для {steel_type}, используется default: {default_features}"
+        try:
+            MODELS[steel_type]["models"] = {
+                "uts": joblib.load(model_dir / "uts_model.pkl"),
+                "ys": joblib.load(model_dir / "ys_model.pkl"),
+                "elong": joblib.load(model_dir / "elong_model.pkl"),
+                "hardness": joblib.load(model_dir / "hardness_model.pkl"),
+            }
+
+            MODELS[steel_type]["scaler"] = joblib.load(
+                model_dir / "scaler.pkl"
+            )
+
+            features_path = model_dir / "features.pkl"
+
+            if features_path.exists():
+                MODELS[steel_type]["features"] = joblib.load(features_path)
+            else:
+                MODELS[steel_type]["features"] = [
+                    "C", "Mn", "Si",
+                    "P", "S", "Ni", "Cr", "Mo", "Ti"
+                ]
+                print(
+                    f"⚠ features.pkl не найден для {steel_type}, используется default"
+                )
+
+        except Exception as e:
+            raise RuntimeError(
+                f"Ошибка загрузки моделей для {steel_type}: {e}"
             )
 
     print("✅ ML models loaded successfully")
 
 
+# Подготовка входных данных
 def prepare_input_data(raw_data: dict, features: list) -> pd.DataFrame:
-    """
-    Преобразует данные из формы Django
-    в DataFrame с правильным порядком признаков
-    """
     values = []
 
     for feature in features:
@@ -119,17 +135,15 @@ def prepare_input_data(raw_data: dict, features: list) -> pd.DataFrame:
                     f"Некорректное значение для {feature}: {value}"
                 )
 
-    # Возвращаем DataFrame с именами колонок
     return pd.DataFrame([values], columns=features)
 
 
+# Предсказание свойств
 def predict_properties(
     steel_type: str,
     raw_data: dict
 ) -> Dict[str, float]:
-    """
-    Делает предсказание механических свойств стали
-    """
+
     if steel_type not in MODELS:
         raise ValueError(f"Неизвестный тип стали: {steel_type}")
 
@@ -139,47 +153,9 @@ def predict_properties(
     scaler = model_block["scaler"]
     models = model_block["models"]
 
-    # Подготовка входных данных
     X = prepare_input_data(raw_data, features)
-
-    # Масштабирование
-    X_scaled = pd.DataFrame(
-        scaler.transform(X),
-        columns=features
-    )
-
-    # Предсказания
-    return {
-        "uts": round(float(models["uts"].predict(X_scaled)[0]), 2),
-        "ys": round(float(models["ys"].predict(X_scaled)[0]), 2),
-        "elong": round(float(models["elong"].predict(X_scaled)[0]), 2),
-        "hardness": round(float(models["hardness"].predict(X_scaled)[0]), 2),
-    }
-
-
-def predict_properties(
-    steel_type: str,
-    raw_data: dict
-) -> Dict[str, float]:
-    """
-    Делает предсказание механических свойств стали
-    """
-    if steel_type not in MODELS:
-        raise ValueError(f"Неизвестный тип стали: {steel_type}")
-
-    model_block = MODELS[steel_type]
-
-    features = model_block["features"]
-    scaler = model_block["scaler"]
-    models = model_block["models"]
-
-    # Подготовка входных данных
-    X = prepare_input_data(raw_data, features)
-
-    # Масштабирование
     X_scaled = scaler.transform(X)
 
-    # Предсказания
     return {
         "uts": round(float(models["uts"].predict(X_scaled)[0]), 2),
         "ys": round(float(models["ys"].predict(X_scaled)[0]), 2),

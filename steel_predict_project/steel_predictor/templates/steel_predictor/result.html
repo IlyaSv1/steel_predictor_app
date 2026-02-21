@@ -70,8 +70,13 @@
     </table>
 
     <div class="text-center mt-4">
-        <a href="{% url 'index' %}" class="btn btn-secondary btn-lg">Вернуться на главную</a>
-        <a href="{% url 'predict' steel_type %}" class="btn btn-primary btn-lg">Новый прогноз</a>
+        <a href="{% url 'steel_predictor:index' %}" class="btn btn-secondary btn-lg">
+            Вернуться на главную
+        </a>
+
+        <a href="{% url 'steel_predictor:predict' steel_type %}" class="btn btn-primary btn-lg">
+            Новый прогноз
+        </a>
     </div>
 </div>
 </body>
