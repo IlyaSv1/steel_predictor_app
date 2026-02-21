@@ -196,4 +196,4 @@ def delete_prediction(request, steel_type, pk):
     )
     prediction.delete()
     logger.info(f"Удалено предсказание ID={pk} для {steel_type}")
-    return redirect('history', steel_type=steel_type)
+    return redirect('steel_predictor:history', steel_type=steel_type)
