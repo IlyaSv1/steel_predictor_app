@@ -83,7 +83,7 @@ def load_models() -> None:
     for steel_type in MODELS.keys():
 
         model_dir = resource_path(
-            f"steel_predictor/models/{steel_type}"
+            f"models/{steel_type}"
         )
 
         if not model_dir.exists():
